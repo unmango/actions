@@ -1,0 +1,87 @@
+name: Docker Build and Push
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: >-
+          Newline-delimited list of image names to tag
+          (e.g. ghcr.io/owner/repo or docker.io/owner/repo)
+        type: string
+        required: true
+      platforms:
+        description: >-
+          Comma-separated list of target platforms.
+          Defaults to linux/amd64 only; set to linux/amd64,linux/arm64 for multi-arch.
+        type: string
+        default: linux/amd64
+      push:
+        description: Push the image after building
+        type: boolean
+        default: false
+      build-args:
+        description: Newline-delimited list of build-time variables (KEY=value)
+        type: string
+        default: ''
+      file:
+        description: Path to the Dockerfile (default is repo root Dockerfile)
+        type: string
+        default: ''
+      context:
+        description: Build context path
+        type: string
+        default: '.'
+    secrets:
+      dockerhub_token:
+        description: Docker Hub token (required when pushing to docker.io)
+        required: false
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+
+      - id: meta
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
+        with:
+          images: ${{ inputs.image }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        if: inputs.push && secrets.dockerhub_token != ''
+        with:
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.dockerhub_token }}
+
+      - uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        if: inputs.push
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.file }}
+          build-args: ${{ inputs.build-args }}
+          platforms: ${{ inputs.platforms }}
+          push: ${{ inputs.push }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: ${{ inputs.push }}
+          sbom: ${{ inputs.push }}
