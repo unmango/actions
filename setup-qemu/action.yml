@@ -15,6 +15,8 @@ runs:
     - shell: bash
       run: |
         set -euo pipefail
-        podman run --rm --privileged \
+        # binfmt_misc registration modifies host kernel state, which rootless
+        # podman cannot do even with --privileged; use sudo for genuine root.
+        sudo podman run --rm --privileged \
           "${{ inputs.image }}" \
           --install "${{ inputs.platforms }}"
