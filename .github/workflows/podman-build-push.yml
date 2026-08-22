@@ -111,6 +111,16 @@ jobs:
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         if: inputs.sbom
 
+      - name: Cosign login (docker.io)
+        # cosign reads Docker's credential store, not podman's auth file,
+        # so it needs its own login even though podman is already authed.
+        if: inputs.push && inputs.sbom && secrets.dockerhub_token != ''
+        run: cosign login docker.io -u ${{ github.repository_owner }} -p ${{ secrets.dockerhub_token }}
+
+      - name: Cosign login (ghcr.io)
+        if: inputs.push && inputs.sbom
+        run: cosign login ghcr.io -u ${{ github.repository_owner }} -p ${{ github.token }}
+
       - uses: UnstoppableMango/actions/podman-build-push@main
         with:
           context: ${{ inputs.context }}

@@ -94,6 +94,11 @@ jobs:
 
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
+      - name: Cosign login
+        # cosign reads Docker's credential store, not podman's auth file,
+        # so it needs its own login even though podman is already authed.
+        run: cosign login ghcr.io -u ${{ github.actor }} -p ${{ github.token }}
+
       - uses: ./podman-build-push
         with:
           context: testdata/podman-build-push
