@@ -66,6 +66,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      DOCKERHUB_TOKEN: ${{ secrets.dockerhub_token }}
     steps:
       - uses: UnstoppableMango/actions/setup-qemu@main
         if: contains(inputs.platforms, ',')
@@ -90,7 +92,7 @@ jobs:
             type=sha
 
       - uses: UnstoppableMango/actions/podman-login@main
-        if: inputs.push && secrets.dockerhub_token != ''
+        if: inputs.push && env.DOCKERHUB_TOKEN != ''
         with:
           registry: docker.io
           username: ${{ github.repository_owner }}
@@ -114,8 +116,8 @@ jobs:
       - name: Cosign login (docker.io)
         # cosign reads Docker's credential store, not podman's auth file,
         # so it needs its own login even though podman is already authed.
-        if: inputs.push && inputs.sbom && secrets.dockerhub_token != ''
-        run: cosign login docker.io -u ${{ github.repository_owner }} -p ${{ secrets.dockerhub_token }}
+        if: inputs.push && inputs.sbom && env.DOCKERHUB_TOKEN != ''
+        run: cosign login docker.io -u ${{ github.repository_owner }} -p ${{ env.DOCKERHUB_TOKEN }}
 
       - name: Cosign login (ghcr.io)
         if: inputs.push && inputs.sbom
