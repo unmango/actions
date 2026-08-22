@@ -1,0 +1,38 @@
+name: Nix Flake Check
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runner label to use
+        type: string
+        default: ubuntu-latest
+      all-systems:
+        description: Pass --all-systems to nix flake check
+        type: boolean
+        default: false
+      cachix_name:
+        description: Cachix cache name
+        type: string
+        default: unstoppablemango
+      extra_nix_config:
+        description: Additional Nix configuration lines
+        type: string
+        default: ''
+    secrets:
+      cachix_auth_token:
+        required: false
+
+jobs:
+  nix-flake-check:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: UnstoppableMango/actions/setup-nix@main
+        with:
+          github_access_token: ${{ github.token }}
+          cachix_name: ${{ inputs.cachix_name }}
+          cachix_auth_token: ${{ secrets.cachix_auth_token }}
+          extra_nix_config: ${{ inputs.extra_nix_config }}
+
+      - run: nix flake check ${{ inputs.all-systems && '--all-systems' || '' }}
+        shell: bash
