@@ -96,7 +96,7 @@ jobs:
         with:
           registry: docker.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.dockerhub_token }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
           ecr: 'false'
 
       - uses: UnstoppableMango/actions/podman-login@main
