@@ -1,0 +1,228 @@
+name: Podman Build and Push
+description: Build (and optionally push) a container image with podman, including multi-arch and cache support
+
+inputs:
+  context:
+    description: Build context path
+    default: '.'
+  file:
+    description: Path to the Containerfile/Dockerfile
+    default: ''
+  platforms:
+    description: Comma-separated list of target platforms (e.g. linux/amd64,linux/arm64)
+    default: linux/amd64
+  tags:
+    description: Newline-delimited list of tags to build/push
+    required: true
+  labels:
+    description: Newline-delimited list of labels (KEY=value)
+    default: ''
+  annotations:
+    description: Newline-delimited list of OCI annotations (KEY=value)
+    default: ''
+  build-args:
+    description: Newline-delimited list of build-time variables (KEY=value)
+    default: ''
+  build-contexts:
+    description: Newline-delimited list of additional named build contexts (name=path)
+    default: ''
+  secrets:
+    description: Newline-delimited list of secrets (id=id,src=path)
+    default: ''
+  no-cache:
+    description: Disable layer cache
+    default: 'false'
+  cache-from:
+    description: Cache source, e.g. a registry image ref or local directory (forces --layers)
+    default: ''
+  cache-to:
+    description: Cache destination, e.g. a registry image ref or local directory (forces --layers)
+    default: ''
+  pull:
+    description: Always attempt to pull a newer version of the base image
+    default: 'false'
+  network:
+    description: Network mode for RUN instructions
+    default: ''
+  add-hosts:
+    description: Newline-delimited list of custom host-to-IP mappings (host:ip)
+    default: ''
+  cgroup-parent:
+    description: Parent cgroup for the build container
+    default: ''
+  shm-size:
+    description: Size of /dev/shm for the build container
+    default: ''
+  ulimit:
+    description: Newline-delimited list of ulimit options
+    default: ''
+  push:
+    description: Push the built image(s) after building
+    default: 'false'
+  sbom:
+    description: >-
+      Generate an SPDX SBOM with syft and attach it to the pushed image with cosign.
+      Requires push to be true. Requires syft and cosign to be available on the runner.
+    default: 'false'
+  provenance:
+    description: Not implemented. No native SLSA/provenance generation exists in buildah/podman; logs a warning and is ignored.
+    default: 'false'
+  ssh:
+    description: Not implemented. No buildah/podman equivalent to buildkit SSH agent forwarding; logs a warning and is ignored.
+    default: ''
+  no-cache-filters:
+    description: Not implemented. buildah cache invalidation is all-or-nothing; logs a warning and is ignored.
+    default: ''
+  allow:
+    description: Not implemented. No buildkit entitlement model exists; logs a warning and is ignored.
+    default: ''
+
+outputs:
+  imageid:
+    description: Built image ID
+    value: ${{ steps.build.outputs.imageid }}
+  digest:
+    description: Pushed image digest
+    value: ${{ steps.push.outputs.digest }}
+  metadata:
+    description: Build result metadata (JSON)
+    value: ${{ steps.metadata.outputs.metadata }}
+
+runs:
+  using: composite
+  steps:
+    - id: warnings
+      shell: bash
+      env:
+        SSH: ${{ inputs.ssh }}
+        NO_CACHE_FILTERS: ${{ inputs.no-cache-filters }}
+        ALLOW: ${{ inputs.allow }}
+        PROVENANCE: ${{ inputs.provenance }}
+      run: |
+        set -euo pipefail
+        [ -n "$SSH" ] && echo "::warning::ssh is not supported (no buildah/podman equivalent to buildkit agent forwarding); ignoring"
+        [ -n "$NO_CACHE_FILTERS" ] && echo "::warning::no-cache-filters is not supported (buildah cache invalidation is all-or-nothing); ignoring"
+        [ -n "$ALLOW" ] && echo "::warning::allow is not supported (no buildkit entitlement model); ignoring"
+        [ "$PROVENANCE" = "true" ] && echo "::warning::provenance is not supported (no native SLSA/provenance generation in buildah/podman); ignoring"
+        true
+
+    - id: build
+      shell: bash
+      env:
+        CONTEXT: ${{ inputs.context }}
+        FILE: ${{ inputs.file }}
+        PLATFORMS: ${{ inputs.platforms }}
+        TAGS: ${{ inputs.tags }}
+        LABELS: ${{ inputs.labels }}
+        ANNOTATIONS: ${{ inputs.annotations }}
+        BUILD_ARGS: ${{ inputs.build-args }}
+        BUILD_CONTEXTS: ${{ inputs.build-contexts }}
+        SECRETS: ${{ inputs.secrets }}
+        NO_CACHE: ${{ inputs.no-cache }}
+        CACHE_FROM: ${{ inputs.cache-from }}
+        CACHE_TO: ${{ inputs.cache-to }}
+        PULL: ${{ inputs.pull }}
+        NETWORK: ${{ inputs.network }}
+        ADD_HOSTS: ${{ inputs.add-hosts }}
+        CGROUP_PARENT: ${{ inputs.cgroup-parent }}
+        SHM_SIZE: ${{ inputs.shm-size }}
+        ULIMIT: ${{ inputs.ulimit }}
+      run: |
+        set -euo pipefail
+
+        multi=false
+        case "$PLATFORMS" in *,*) multi=true ;; esac
+
+        args=(--platform "$PLATFORMS")
+        [ -n "$FILE" ] && args+=(-f "$FILE")
+        [ "$NO_CACHE" = "true" ] && args+=(--no-cache)
+        [ "$PULL" = "true" ] && args+=(--pull)
+        [ -n "$NETWORK" ] && args+=(--network "$NETWORK")
+        [ -n "$CGROUP_PARENT" ] && args+=(--cgroup-parent "$CGROUP_PARENT")
+        [ -n "$SHM_SIZE" ] && args+=(--shm-size "$SHM_SIZE")
+
+        while IFS= read -r v; do [ -n "$v" ] && args+=(--build-arg "$v"); done <<< "$BUILD_ARGS"
+        while IFS= read -r v; do [ -n "$v" ] && args+=(--build-context "$v"); done <<< "$BUILD_CONTEXTS"
+        while IFS= read -r v; do [ -n "$v" ] && args+=(--label "$v"); done <<< "$LABELS"
+        while IFS= read -r v; do [ -n "$v" ] && args+=(--annotation "$v"); done <<< "$ANNOTATIONS"
+        while IFS= read -r v; do [ -n "$v" ] && args+=(--secret "$v"); done <<< "$SECRETS"
+        while IFS= read -r v; do [ -n "$v" ] && args+=(--add-host "$v"); done <<< "$ADD_HOSTS"
+        while IFS= read -r v; do [ -n "$v" ] && args+=(--ulimit "$v"); done <<< "$ULIMIT"
+
+        cache=false
+        [ -n "$CACHE_FROM" ] && args+=(--cache-from "$CACHE_FROM") && cache=true
+        [ -n "$CACHE_TO" ] && args+=(--cache-to "$CACHE_TO") && cache=true
+        [ "$cache" = "true" ] && args+=(--layers)
+
+        mapfile -t tags < <(grep -v '^[[:space:]]*$' <<< "$TAGS" || true)
+        if [ "${#tags[@]}" -eq 0 ]; then
+          echo "::error::tags input must contain at least one non-empty tag" >&2
+          exit 1
+        fi
+
+        iidfile="$RUNNER_TEMP/podman-build-push-iid"
+
+        if $multi; then
+          manifest="localhost/podman-build-push-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          podman manifest rm "$manifest" >/dev/null 2>&1 || true
+          podman build "${args[@]}" --manifest "$manifest" --iidfile "$iidfile" "$CONTEXT"
+          echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
+        else
+          for t in "${tags[@]}"; do args+=(-t "$t"); done
+          podman build "${args[@]}" --iidfile "$iidfile" "$CONTEXT"
+        fi
+
+        echo "multi=$multi" >> "$GITHUB_OUTPUT"
+        echo "imageid=$(cat "$iidfile")" >> "$GITHUB_OUTPUT"
+
+    - id: push
+      if: ${{ inputs.push == 'true' }}
+      shell: bash
+      env:
+        TAGS: ${{ inputs.tags }}
+        MULTI: ${{ steps.build.outputs.multi }}
+        MANIFEST: ${{ steps.build.outputs.manifest }}
+      run: |
+        set -euo pipefail
+        mapfile -t tags < <(grep -v '^[[:space:]]*$' <<< "$TAGS")
+        digestfile="$RUNNER_TEMP/podman-build-push-digest"
+        for t in "${tags[@]}"; do
+          if [ "$MULTI" = "true" ]; then
+            podman manifest push --all "$MANIFEST" "docker://$t" --digestfile "$digestfile"
+          else
+            podman push "$t" --digestfile "$digestfile"
+          fi
+        done
+        echo "digest=$(cat "$digestfile")" >> "$GITHUB_OUTPUT"
+
+    - id: sbom
+      if: ${{ inputs.push == 'true' && inputs.sbom == 'true' }}
+      shell: bash
+      env:
+        TAGS: ${{ inputs.tags }}
+      run: |
+        set -euo pipefail
+        primary_tag="$(grep -v '^[[:space:]]*$' <<< "$TAGS" | head -n1)"
+        sbom_file="$RUNNER_TEMP/podman-build-push-sbom.spdx.json"
+        syft "$primary_tag" -o spdx-json > "$sbom_file"
+        cosign attach sbom --sbom "$sbom_file" "$primary_tag"
+
+    - id: metadata
+      shell: bash
+      env:
+        IMAGEID: ${{ steps.build.outputs.imageid }}
+        DIGEST: ${{ steps.push.outputs.digest }}
+        TAGS: ${{ inputs.tags }}
+      run: |
+        set -euo pipefail
+        tags_json="$(jq -Rn '[inputs | select(length > 0)]' <<< "$TAGS")"
+        metadata_json="$(jq -n \
+          --arg imageid "$IMAGEID" \
+          --arg digest "$DIGEST" \
+          --argjson tags "$tags_json" \
+          '{"containerimage.imageid": $imageid, "containerimage.digest": $digest, "image.tags": $tags}')"
+        {
+          echo "metadata<<PODMAN_BUILD_PUSH_METADATA_EOF"
+          echo "$metadata_json"
+          echo "PODMAN_BUILD_PUSH_METADATA_EOF"
+        } >> "$GITHUB_OUTPUT"

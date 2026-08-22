@@ -1,0 +1,22 @@
+name: Setup QEMU
+description: Register QEMU user-mode emulators via binfmt_misc, for cross-platform podman builds
+
+inputs:
+  platforms:
+    description: Comma-separated list of platforms to install emulators for
+    default: all
+  image:
+    description: binfmt installer image to run
+    default: docker.io/tonistiigi/binfmt:latest
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+        # binfmt_misc registration modifies host kernel state, which rootless
+        # podman cannot do even with --privileged; use sudo for genuine root.
+        sudo podman run --rm --privileged \
+          "${{ inputs.image }}" \
+          --install "${{ inputs.platforms }}"
