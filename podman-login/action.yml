@@ -1,0 +1,50 @@
+name: Podman Login
+description: Log into a container registry using podman
+
+inputs:
+  registry:
+    description: Server address of the registry
+    default: docker.io
+  username:
+    description: Username used to log in to the registry
+    required: true
+  password:
+    description: Password or token used to log in to the registry
+    required: true
+  ecr:
+    description: >-
+      Whether the registry is an Amazon ECR registry (auto, true, or false).
+      When auto (default), detected from the registry hostname.
+      Requires aws-actions/configure-aws-credentials to have run first;
+      the password input is ignored when ECR credentials are resolved.
+    default: auto
+  logout:
+    description: >-
+      Not implemented. Composite actions have no post-job hook, so this
+      action cannot log out automatically at the end of a job the way
+      docker/login-action does. Kept only for interface parity.
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+
+        registry="${{ inputs.registry }}"
+        username="${{ inputs.username }}"
+        password="${{ inputs.password }}"
+        ecr="${{ inputs.ecr }}"
+
+        if [[ "$ecr" != "false" && "$registry" =~ ^[0-9]+\.dkr\.ecr\.([a-z0-9-]+)\.amazonaws\.com$ ]]; then
+          region="${BASH_REMATCH[1]}"
+          password="$(aws ecr get-login-password --region "$region")"
+          username="AWS"
+          echo "::add-mask::$password"
+        elif [[ "$ecr" == "true" ]]; then
+          echo "ecr: true was set but registry '$registry' does not look like an ECR hostname" >&2
+          exit 1
+        fi
+
+        printf '%s' "$password" | podman login --username "$username" --password-stdin "$registry"
