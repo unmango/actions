@@ -1,0 +1,79 @@
+name: Release Please
+
+on:
+  workflow_call:
+    inputs:
+      release-type:
+        description: >-
+          Release type when no config file is used.
+          simple maintains version.txt and CHANGELOG.md, which suits container-only repos.
+          Ignored when config-file or manifest-file is set, since a non-empty release-type
+          makes the action build its config from inputs instead of the files.
+        type: string
+        default: simple
+      config-file:
+        description: Path to release-please-config.json (switches to manifest mode)
+        type: string
+        default: ''
+      manifest-file:
+        description: Path to .release-please-manifest.json (used with config-file)
+        type: string
+        default: ''
+      target-branch:
+        description: Branch to open the release PR against (detected by default)
+        type: string
+        default: ''
+    secrets:
+      token:
+        description: >-
+          Personal access token with contents, pull-requests, and issues write.
+          issues write is needed for the autorelease labels release-please puts on its PRs.
+          Tags created with the default GITHUB_TOKEN do not trigger other workflows,
+          so a PAT is required for a tag push to start an image build.
+        required: true
+    outputs:
+      release_created:
+        description: "'true' when a release was created on this run"
+        value: ${{ jobs.release-please.outputs.release_created }}
+      tag_name:
+        description: Tag of the created release (e.g. v1.2.3)
+        value: ${{ jobs.release-please.outputs.tag_name }}
+      version:
+        description: Version of the created release without the v prefix
+        value: ${{ jobs.release-please.outputs.version }}
+      major:
+        description: Major version component
+        value: ${{ jobs.release-please.outputs.major }}
+      minor:
+        description: Minor version component
+        value: ${{ jobs.release-please.outputs.minor }}
+      patch:
+        description: Patch version component
+        value: ${{ jobs.release-please.outputs.patch }}
+      sha:
+        description: Commit the release was tagged at
+        value: ${{ jobs.release-please.outputs.sha }}
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+      major: ${{ steps.release.outputs.major }}
+      minor: ${{ steps.release.outputs.minor }}
+      patch: ${{ steps.release.outputs.patch }}
+      sha: ${{ steps.release.outputs.sha }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.token }}
+          release-type: ${{ inputs.config-file == '' && inputs.manifest-file == '' && inputs.release-type || '' }}
+          config-file: ${{ inputs.config-file }}
+          manifest-file: ${{ inputs.manifest-file }}
+          target-branch: ${{ inputs.target-branch }}
