@@ -28,11 +28,12 @@ The podman actions mirror the `docker/*` action interfaces so a workflow can swa
 | [`podman-build-push.yml`](.github/workflows/podman-build-push.yml) | Same interface as above, built with podman |
 | [`goreleaser.yml`](.github/workflows/goreleaser.yml) | Run GoReleaser in release or snapshot mode |
 | [`nix-flake-check.yml`](.github/workflows/nix-flake-check.yml) | Run `nix flake check` with Cachix |
+| [`release-please.yml`](.github/workflows/release-please.yml) | Open release PRs and tag releases with release-please |
 
 ## Usage
 
-The repo has no tags.
-The examples use `@main` for brevity; pin to a full commit SHA in real workflows.
+Releases are tagged `vX.Y.Z` and a floating `vX` tag tracks the latest release of each major version.
+The examples use `@main` for brevity; pin to `@v1` for the floating major tag, or to `@v1.2.3` or a full commit SHA for an exact version.
 `setup-qemu` registers `binfmt_misc` handlers with `sudo podman run --privileged`, so it needs `sudo` and a rootful podman.
 GitHub-hosted Ubuntu runners meet both requirements.
 
@@ -79,6 +80,61 @@ jobs:
     secrets:
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
 ```
+
+### Versioning a container repo
+
+`release-please.yml` runs [release-please](https://github.com/googleapis/release-please) in `simple` mode.
+It opens a release PR from Conventional Commits, maintains `version.txt` and `CHANGELOG.md`, and on merge creates a `vX.Y.Z` tag and GitHub release.
+The tag push runs the build-push workflow, and `docker/metadata-action` derives the image tags `1.2.3`, `1.2`, `1`, and `latest` from it.
+
+The workflow needs a personal access token with `contents` and `pull-requests` write.
+Tags created with the default `GITHUB_TOKEN` do not trigger other workflows, so the image build would never run.
+
+```yaml
+# .github/workflows/release-please.yml
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    uses: unmango/actions/.github/workflows/release-please.yml@main
+    secrets:
+      token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+```
+
+```yaml
+# .github/workflows/image.yml
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    uses: unmango/actions/.github/workflows/podman-build-push.yml@main
+    with:
+      image: ghcr.io/${{ github.repository }}
+      push: ${{ github.event_name != 'pull_request' }}
+```
+
+| Event | Image tags |
+| --- | --- |
+| Pull request | `pr-N` |
+| Push to `main` | `main`, `sha-<short>` |
+| Tag `v1.2.3` | `1.2.3`, `1.2`, `1`, `latest`, `sha-<short>` |
+
+Pass `config-file` and `manifest-file` to use a `release-please-config.json` instead of the `simple` defaults.
+The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`, `patch`, and `sha` as outputs for jobs that need to run only after a release.
 
 ## Feature support matrix
 
