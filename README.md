@@ -71,95 +71,90 @@ jobs:
 
 ## Feature support matrix
 
-Legend:
-
-- ✅ supported
-- ⚠️ accepted for interface parity, logs a warning, and is ignored
-- ❌ not available
+<sub>✅ supported · ⚠️ accepted but ignored with a warning · ❌ not available</sub>
 
 ### `podman-build-push` vs `docker/build-push-action`
 
-| Input | Support | Notes |
-| --- | --- | --- |
-| `context` | ✅ | |
-| `file` | ✅ | |
-| `platforms` | ✅ | Multiple platforms build a manifest list; run `setup-qemu` first |
-| `tags` | ✅ | |
-| `labels` | ✅ | |
-| `annotations` | ✅ | |
-| `build-args` | ✅ | |
-| `build-contexts` | ✅ | |
-| `secrets` | ✅ | `id=id,src=path` form only |
-| `no-cache` | ✅ | |
-| `cache-from` | ✅ | A single registry ref or local directory, not buildx `type=...` syntax; forces `--layers` |
-| `cache-to` | ✅ | Same as `cache-from` |
-| `pull` | ✅ | |
-| `network` | ✅ | |
-| `add-hosts` | ✅ | |
-| `cgroup-parent` | ✅ | |
-| `shm-size` | ✅ | |
-| `ulimit` | ✅ | |
-| `push` | ✅ | |
-| `sbom` | ✅ | Requires `push`; needs `syft` and `cosign` on the runner |
-| `provenance` | ⚠️ | No native SLSA provenance generation in buildah or podman |
-| `ssh` | ⚠️ | No buildkit SSH agent forwarding equivalent |
-| `no-cache-filters` | ⚠️ | buildah cache invalidation is all-or-nothing |
-| `allow` | ⚠️ | No buildkit entitlement model |
-| `attests` | ❌ | |
-| `builder` | ❌ | |
-| `call` | ❌ | |
-| `load` | ❌ | Built images are already in podman's local store |
-| `outputs` | ❌ | |
-| `secret-envs` | ❌ | |
-| `secret-files` | ❌ | Use `secrets` |
-| `target` | ❌ | |
-| `github-token` | ❌ | |
+| Input | Podman | Docker | Notes |
+| --- | --- | --- | --- |
+| `context` | ✅ | ✅ | |
+| `file` | ✅ | ✅ | |
+| `platforms` | ✅ | ✅ | Multiple platforms build a manifest list; run `setup-qemu` first |
+| `tags` | ✅ | ✅ | |
+| `labels` | ✅ | ✅ | |
+| `annotations` | ✅ | ✅ | |
+| `build-args` | ✅ | ✅ | |
+| `build-contexts` | ✅ | ✅ | |
+| `secrets` | ✅ | ✅ | Podman takes the `id=id,src=path` form only |
+| `no-cache` | ✅ | ✅ | |
+| `cache-from` | ✅ | ✅ | Podman takes a single registry ref or local directory, not buildx `type=...` syntax, and forces `--layers` |
+| `cache-to` | ✅ | ✅ | Same as `cache-from` |
+| `pull` | ✅ | ✅ | |
+| `network` | ✅ | ✅ | |
+| `add-hosts` | ✅ | ✅ | |
+| `cgroup-parent` | ✅ | ✅ | |
+| `shm-size` | ✅ | ✅ | |
+| `ulimit` | ✅ | ✅ | |
+| `push` | ✅ | ✅ | |
+| `sbom` | ✅ | ✅ | Podman requires `push` and needs `syft` and `cosign` on the runner |
+| `provenance` | ⚠️ | ✅ | No native SLSA provenance generation in buildah or podman |
+| `ssh` | ⚠️ | ✅ | No buildkit SSH agent forwarding equivalent |
+| `no-cache-filters` | ⚠️ | ✅ | buildah cache invalidation is all-or-nothing |
+| `allow` | ⚠️ | ✅ | No buildkit entitlement model |
+| `attests` | ❌ | ✅ | |
+| `builder` | ❌ | ✅ | |
+| `call` | ❌ | ✅ | |
+| `load` | ❌ | ✅ | Podman images are already in the local store after a build |
+| `outputs` | ❌ | ✅ | |
+| `secret-envs` | ❌ | ✅ | |
+| `secret-files` | ❌ | ✅ | Use `secrets` |
+| `target` | ❌ | ✅ | |
+| `github-token` | ❌ | ✅ | |
 
-| Output | Support | Notes |
-| --- | --- | --- |
-| `imageid` | ✅ | |
-| `digest` | ✅ | Only set when `push` is true |
-| `metadata` | ✅ | Contains `containerimage.imageid`, `containerimage.digest`, and `image.tags`, a subset of the buildx shape |
+| Output | Podman | Docker | Notes |
+| --- | --- | --- | --- |
+| `imageid` | ✅ | ✅ | |
+| `digest` | ✅ | ✅ | Podman only sets it when `push` is true |
+| `metadata` | ✅ | ✅ | Podman emits `containerimage.imageid`, `containerimage.digest`, and `image.tags`, a subset of the buildx shape |
 
-Boolean inputs are strings (`'true'` and `'false'`) because composite actions have no typed inputs.
+Podman boolean inputs are strings (`'true'` and `'false'`) because composite actions have no typed inputs.
 
 ### `podman-login` vs `docker/login-action`
 
-| Input | Support | Notes |
-| --- | --- | --- |
-| `registry` | ✅ | |
-| `username` | ✅ | |
-| `password` | ✅ | |
-| `ecr` | ✅ | `auto`, `true`, or `false`; needs `aws-actions/configure-aws-credentials` first |
-| `logout` | ⚠️ | Composite actions have no post-job hook |
+| Input | Podman | Docker | Notes |
+| --- | --- | --- | --- |
+| `registry` | ✅ | ✅ | |
+| `username` | ✅ | ✅ | |
+| `password` | ✅ | ✅ | |
+| `ecr` | ✅ | ✅ | `auto`, `true`, or `false`; needs `aws-actions/configure-aws-credentials` first |
+| `logout` | ⚠️ | ✅ | Composite actions have no post-job hook |
 
 ### `setup-qemu` vs `docker/setup-qemu-action`
 
-| Input | Support | Notes |
-| --- | --- | --- |
-| `platforms` | ✅ | |
-| `image` | ✅ | |
-| `cache-image` | ❌ | |
-| `cache-binary` | ❌ | |
+| Input | Podman | Docker | Notes |
+| --- | --- | --- | --- |
+| `platforms` | ✅ | ✅ | |
+| `image` | ✅ | ✅ | |
+| `cache-image` | ❌ | ✅ | |
+| `cache-binary` | ❌ | ✅ | |
 
 ### `podman-build-push.yml` vs `docker-build-push.yml`
 
-| Input | Docker | Podman | Notes |
+| Input | Podman | Docker | Notes |
 | --- | --- | --- | --- |
 | `image` | ✅ | ✅ | |
-| `platforms` | ✅ | ✅ | Podman workflow runs `setup-qemu` when more than one platform is listed |
+| `platforms` | ✅ | ✅ | Podman runs `setup-qemu` when more than one platform is listed |
 | `push` | ✅ | ✅ | |
 | `build-args` | ✅ | ✅ | |
 | `file` | ✅ | ✅ | |
 | `context` | ✅ | ✅ | |
 | `dockerhub_token` (secret) | ✅ | ✅ | |
-| `secrets-list` | ❌ | ✅ | Build secrets in `id=id,src=path` form |
-| `cache` | ❌ | ✅ | `none`, `registry`, or `local` |
-| `cache-image` | ❌ | ✅ | Registry ref used when `cache` is `registry` |
-| `cache-dir` | ❌ | ✅ | Directory used when `cache` is `local`, persisted with `actions/cache` |
-| `sbom` | always on when pushing | ✅ | Podman workflow installs `syft` and `cosign` and attaches an SPDX SBOM |
-| `provenance` | always on when pushing | ⚠️ | |
-| GHA cache backend (`type=gha`) | always on | ❌ | Use `cache: registry` or `cache: local` instead |
+| `secrets-list` | ✅ | ❌ | Build secrets in `id=id,src=path` form |
+| `cache` | ✅ | ❌ | `none`, `registry`, or `local`; docker always uses the GHA cache backend |
+| `cache-image` | ✅ | ❌ | Registry ref used when `cache` is `registry` |
+| `cache-dir` | ✅ | ❌ | Directory used when `cache` is `local`, persisted with `actions/cache` |
+| `sbom` | ✅ | ❌ | Docker always attaches an SBOM when pushing; podman installs `syft` and `cosign` and attaches an SPDX SBOM on request |
+| `provenance` | ⚠️ | ❌ | Docker always generates provenance when pushing; podman accepts the input and ignores it |
 
 ## Development
 
