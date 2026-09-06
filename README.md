@@ -31,11 +31,18 @@ The podman actions mirror the `docker/*` action interfaces so a workflow can swa
 
 ## Usage
 
-The repo has no tags, so reference actions at `@main`.
+The repo has no tags.
+The examples use `@main` for brevity; pin to a full commit SHA in real workflows.
+`setup-qemu` registers `binfmt_misc` handlers with `sudo podman run --privileged`, so it needs `sudo` and a rootful podman.
+GitHub-hosted Ubuntu runners meet both requirements.
 
 ### Composite actions
 
 ```yaml
+permissions:
+  contents: read
+  packages: write
+
 steps:
   - uses: actions/checkout@v4
 
@@ -57,6 +64,10 @@ steps:
 ### Reusable workflow
 
 ```yaml
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   image:
     uses: unmango/actions/.github/workflows/podman-build-push.yml@main
@@ -64,14 +75,14 @@ jobs:
       image: ghcr.io/${{ github.repository }}
       platforms: linux/amd64,linux/arm64
       push: ${{ github.event_name != 'pull_request' }}
-      sbom: true
+      sbom: ${{ github.event_name != 'pull_request' }}
     secrets:
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
 ```
 
 ## Feature support matrix
 
-<sub>✅ supported · ⚠️ accepted but ignored with a warning · ❌ not available</sub>
+<sub>✅ supported · ⚠️ accepted for interface parity but ignored · ❌ not available</sub>
 
 ### `podman-build-push` vs `docker/build-push-action`
 
@@ -127,7 +138,7 @@ Podman boolean inputs are strings (`'true'` and `'false'`) because composite act
 | `username` | ✅ | ✅ | |
 | `password` | ✅ | ✅ | |
 | `ecr` | ✅ | ✅ | `auto`, `true`, or `false`; needs `aws-actions/configure-aws-credentials` first |
-| `logout` | ⚠️ | ✅ | Composite actions have no post-job hook |
+| `logout` | ⚠️ | ✅ | Composite actions have no post-job hook; no warning is logged |
 
 ### `setup-qemu` vs `docker/setup-qemu-action`
 
