@@ -7,6 +7,8 @@ on:
         description: >-
           Release type when no config file is used.
           simple maintains version.txt and CHANGELOG.md, which suits container-only repos.
+          Ignored when config-file or manifest-file is set, since a non-empty release-type
+          makes the action build its config from inputs instead of the files.
         type: string
         default: simple
       config-file:
@@ -24,7 +26,8 @@ on:
     secrets:
       token:
         description: >-
-          Personal access token with contents and pull-requests write.
+          Personal access token with contents, pull-requests, and issues write.
+          issues write is needed for the autorelease labels release-please puts on its PRs.
           Tags created with the default GITHUB_TOKEN do not trigger other workflows,
           so a PAT is required for a tag push to start an image build.
         required: true
@@ -70,7 +73,7 @@ jobs:
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
           token: ${{ secrets.token }}
-          release-type: ${{ inputs.release-type }}
+          release-type: ${{ inputs.config-file == '' && inputs.manifest-file == '' && inputs.release-type || '' }}
           config-file: ${{ inputs.config-file }}
           manifest-file: ${{ inputs.manifest-file }}
           target-branch: ${{ inputs.target-branch }}

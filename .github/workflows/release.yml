@@ -8,6 +8,12 @@ permissions:
   contents: write
   pull-requests: write
 
+# Serialize runs so a slower, older run cannot move the floating major tag
+# back to an earlier release after a newer run has already moved it.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     uses: ./.github/workflows/release-please.yml

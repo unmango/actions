@@ -87,7 +87,8 @@ jobs:
 It opens a release PR from Conventional Commits, maintains `version.txt` and `CHANGELOG.md`, and on merge creates a `vX.Y.Z` tag and GitHub release.
 The tag push runs the build-push workflow, and `docker/metadata-action` derives the image tags `1.2.3`, `1.2`, `1`, and `latest` from it.
 
-The workflow needs a personal access token with `contents` and `pull-requests` write.
+The workflow needs a personal access token with `contents`, `pull-requests`, and `issues` write.
+`issues` write covers the `autorelease` labels release-please puts on its PRs.
 Tags created with the default `GITHUB_TOKEN` do not trigger other workflows, so the image build would never run.
 
 ```yaml
