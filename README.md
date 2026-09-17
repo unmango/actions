@@ -26,8 +26,6 @@ The podman actions mirror the `docker/*` action interfaces so a workflow can swa
 | --- | --- |
 | [`docker-build-push.yml`](.github/workflows/docker-build-push.yml) | Build and push with buildx, tagged by `docker/metadata-action` |
 | [`podman-build-push.yml`](.github/workflows/podman-build-push.yml) | Same interface as above, built with podman |
-| [`goreleaser.yml`](.github/workflows/goreleaser.yml) | Run GoReleaser in release or snapshot mode |
-| [`nix-flake-check.yml`](.github/workflows/nix-flake-check.yml) | Run `nix flake check` with Cachix |
 | [`release-please.yml`](.github/workflows/release-please.yml) | Open release PRs and tag releases with release-please |
 
 ## Usage
