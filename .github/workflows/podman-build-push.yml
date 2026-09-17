@@ -69,7 +69,7 @@ jobs:
     env:
       DOCKERHUB_TOKEN: ${{ secrets.dockerhub_token }}
     steps:
-      - uses: UnstoppableMango/actions/setup-qemu@main
+      - uses: unmango/actions/setup-qemu@main
         if: contains(inputs.platforms, ',')
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -91,7 +91,7 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
 
-      - uses: UnstoppableMango/actions/podman-login@main
+      - uses: unmango/actions/podman-login@main
         if: inputs.push && env.DOCKERHUB_TOKEN != ''
         with:
           registry: docker.io
@@ -99,7 +99,7 @@ jobs:
           password: ${{ env.DOCKERHUB_TOKEN }}
           ecr: 'false'
 
-      - uses: UnstoppableMango/actions/podman-login@main
+      - uses: unmango/actions/podman-login@main
         if: inputs.push
         with:
           registry: ghcr.io
@@ -123,7 +123,7 @@ jobs:
         if: inputs.push && inputs.sbom
         run: cosign login ghcr.io -u ${{ github.repository_owner }} -p ${{ github.token }}
 
-      - uses: UnstoppableMango/actions/podman-build-push@main
+      - uses: unmango/actions/podman-build-push@main
         with:
           context: ${{ inputs.context }}
           file: ${{ inputs.file }}
