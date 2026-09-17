@@ -23,14 +23,24 @@ on:
         description: Branch to open the release PR against (detected by default)
         type: string
         default: ''
+      app-client-id:
+        description: >-
+          Client ID of a GitHub App with contents, pull-requests, and issues write.
+          When set, the workflow mints an app token from it and the app-private-key secret.
+        type: string
+        default: ''
     secrets:
+      app-private-key:
+        description: Private key of the GitHub App named by app-client-id
+        required: false
       token:
         description: >-
-          Personal access token with contents, pull-requests, and issues write.
+          Personal access token with contents, pull-requests, and issues write,
+          used when app-client-id is empty.
           issues write is needed for the autorelease labels release-please puts on its PRs.
           Tags created with the default GITHUB_TOKEN do not trigger other workflows,
-          so a PAT is required for a tag push to start an image build.
-        required: true
+          so an app token or a PAT is required for a tag push to start an image build.
+        required: false
     outputs:
       release_created:
         description: "'true' when a release was created on this run"
@@ -69,10 +79,23 @@ jobs:
       patch: ${{ steps.release.outputs.patch }}
       sha: ${{ steps.release.outputs.sha }}
     steps:
+      # A GitHub App token rather than GITHUB_TOKEN, so the release PR triggers
+      # CI, and rather than a PAT, so the commits it pushes are signed.
+      # The condition reads the input because secrets are unavailable in `if`.
+      - id: app-token
+        if: inputs.app-client-id != ''
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ inputs.app-client-id }}
+          private-key: ${{ secrets.app-private-key }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.app-token.outputs.token || secrets.token || github.token }}
           release-type: ${{ inputs.config-file == '' && inputs.manifest-file == '' && inputs.release-type || '' }}
           config-file: ${{ inputs.config-file }}
           manifest-file: ${{ inputs.manifest-file }}

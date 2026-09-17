@@ -87,9 +87,13 @@ jobs:
 It opens a release PR from Conventional Commits, maintains `version.txt` and `CHANGELOG.md`, and on merge creates a `vX.Y.Z` tag and GitHub release.
 The tag push runs the build-push workflow, and `docker/metadata-action` derives the image tags `1.2.3`, `1.2`, `1`, and `latest` from it.
 
-The workflow needs a personal access token with `contents`, `pull-requests`, and `issues` write.
+The workflow needs credentials with `contents`, `pull-requests`, and `issues` write.
 `issues` write covers the `autorelease` labels release-please puts on its PRs.
 Tags created with the default `GITHUB_TOKEN` do not trigger other workflows, so the image build would never run.
+
+Pass a GitHub App through the `app-client-id` input and the `app-private-key` secret, and the workflow mints a token from them.
+Commits pushed with an app token are signed.
+A personal access token in the `token` secret is the alternative when `app-client-id` is empty.
 
 ```yaml
 # .github/workflows/release-please.yml
@@ -104,8 +108,10 @@ permissions:
 jobs:
   release:
     uses: unmango/actions/.github/workflows/release-please.yml@main
+    with:
+      app-client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
     secrets:
-      token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+      app-private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 ```
 
 ```yaml

@@ -20,8 +20,9 @@ jobs:
     with:
       config-file: release-please-config.json
       manifest-file: .release-please-manifest.json
+      app-client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
     secrets:
-      token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+      app-private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
   major-tag:
     # release-please does not move floating major tags, so v1 is re-pointed here
@@ -29,12 +30,18 @@ jobs:
     needs: release
     if: needs.release.outputs.release_created == 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    permissions: {}
     steps:
+      - id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Move major tag
         env:
