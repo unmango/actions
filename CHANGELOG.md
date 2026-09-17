@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.1](https://github.com/unmango/actions/compare/v1.0.0...v1.0.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* **ci:** correct repo owner in self-referencing uses ([#33](https://github.com/unmango/actions/issues/33)) ([302a5d5](https://github.com/unmango/actions/commit/302a5d50084804f34c2665518464a2a331895bf4))
+
+
+### Code Refactoring
+
+* **flake.nix:** use `with inputs` to reduce repetition in imports list ([#41](https://github.com/unmango/actions/issues/41)) ([6bbd955](https://github.com/unmango/actions/commit/6bbd955be0091c67436f1dd4586dca0362e8ed72))
+
 ## 1.0.0 (2026-09-17)
 
 
