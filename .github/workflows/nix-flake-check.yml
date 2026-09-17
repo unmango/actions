@@ -27,7 +27,7 @@ jobs:
   nix-flake-check:
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: UnstoppableMango/actions/setup-nix@main
+      - uses: unmango/actions/setup-nix@main
         with:
           github_access_token: ${{ github.token }}
           cachix_name: ${{ inputs.cachix_name }}
