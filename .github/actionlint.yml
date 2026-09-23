@@ -1,0 +1,10 @@
+self-hosted-runner:
+  labels:
+    - thecluster
+
+paths:
+  .github/workflows/podman-build-push.yml:
+    # actionlint does not know the job.workflow_* properties.
+    # https://github.com/rhysd/actionlint/issues/647
+    ignore:
+      - 'property "workflow_sha" is not defined'

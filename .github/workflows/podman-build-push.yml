@@ -71,12 +71,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # job_workflow_sha is the SHA of this reusable workflow file, so the
+      # job.workflow_sha is the SHA of this reusable workflow file, so the
       # composite actions always match the version the caller pinned.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: unmango/actions
-          ref: ${{ github.job_workflow_sha }}
+          ref: ${{ job.workflow_sha }}
           path: .actions
 
       - uses: ./.actions/setup-qemu
