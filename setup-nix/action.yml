@@ -15,7 +15,7 @@ inputs:
     description: Additional Nix configuration lines
     required: false
   use_daemon:
-    description: Push through the Cachix daemon's post-build hook; when false, push by scanning the store at the end of the job
+    description: Push through the Cachix daemon's post-build hook; when false, scan and push all store paths at the end of the job. Use false only with an isolated single-user store
     default: "true"
 
 runs:
