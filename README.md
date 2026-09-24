@@ -7,6 +7,7 @@ Blessed GitHub Actions.
 [![License](https://img.shields.io/github/license/unmango/actions)](LICENSE)
 [![Nix flake](https://img.shields.io/badge/nix-flake-5277C3?logo=nixos&logoColor=white)](flake.nix)
 [![Last commit](https://img.shields.io/github/last-commit/unmango/actions)](https://github.com/unmango/actions/commits/main)
+[![Hercules CI](https://hercules-ci.com/api/v1/site/github/account/unmango/project/actions/badge)](https://hercules-ci.com/github/unmango/actions)
 
 Composite actions and reusable workflows shared across my repos.
 The podman actions mirror the `docker/*` action interfaces so a workflow can swap between them with minimal changes.
