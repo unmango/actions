@@ -5,6 +5,7 @@ on:
     paths:
       - podman-login/**
       - podman-build-push/**
+      - podman-push/**
       - setup-qemu/**
       - setup-podman/**
       - testdata/podman-build-push/**
@@ -94,6 +95,38 @@ jobs:
           set -euo pipefail
           count="$(skopeo inspect --raw "docker://${{ env.TEST_IMAGE }}:multi-${{ github.run_id }}" | jq '.manifests | length')"
           [ "$count" = "2" ]
+
+  push:
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./podman-login
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          ecr: 'false'
+
+      - name: Build an image outside podman-build-push
+        run: podman build --secret id=test,src=/etc/hostname -t localhost/podman-push-test testdata/podman-build-push
+
+      - id: push
+        uses: ./podman-push
+        with:
+          image: localhost/podman-push-test
+          tags: |
+            ${{ env.TEST_IMAGE }}:push-a-${{ github.run_id }}
+            ${{ env.TEST_IMAGE }}:push-b-${{ github.run_id }}
+
+      - name: Verify both tags were pushed with the reported digest
+        run: |
+          set -euo pipefail
+          for t in push-a push-b; do
+            digest="$(skopeo inspect --format '{{.Digest}}' "docker://${{ env.TEST_IMAGE }}:$t-${{ github.run_id }}")"
+            [ "$digest" = "${{ steps.push.outputs.digest }}" ]
+          done
 
   sbom:
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'

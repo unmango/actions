@@ -1,0 +1,44 @@
+name: Podman Push
+description: Tag and push an image or manifest list that is already in podman's local store
+
+inputs:
+  image:
+    description: Local image or manifest list to push (name, ID, or reference)
+    required: true
+  tags:
+    description: Newline-delimited list of fully qualified tags to push to
+    required: true
+
+outputs:
+  digest:
+    description: Digest of the pushed image or manifest list
+    value: ${{ steps.push.outputs.digest }}
+
+runs:
+  using: composite
+  steps:
+    - id: push
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+        TAGS: ${{ inputs.tags }}
+      run: |
+        set -euo pipefail
+        mapfile -t tags < <(grep -v '^[[:space:]]*$' <<< "$TAGS" || true)
+        if [ "${#tags[@]}" -eq 0 ]; then
+          echo "::error::tags input must contain at least one non-empty tag" >&2
+          exit 1
+        fi
+
+        digestfile="$RUNNER_TEMP/podman-push-digest"
+        if podman manifest exists "$IMAGE" 2>/dev/null; then
+          for t in "${tags[@]}"; do
+            podman manifest push --all "$IMAGE" "docker://$t" --digestfile "$digestfile"
+          done
+        else
+          for t in "${tags[@]}"; do
+            podman tag "$IMAGE" "$t"
+            podman push "$t" --digestfile "$digestfile"
+          done
+        fi
+        echo "digest=$(cat "$digestfile")" >> "$GITHUB_OUTPUT"
