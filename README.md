@@ -74,6 +74,7 @@ steps:
 
 | Input | Default | Purpose |
 | --- | --- | --- |
+| `install_nix` | `true` | `false` skips the install on runners with Nix preinstalled and adds `~/.nix-profile/bin` to `PATH` |
 | `github_access_token` | `github.token` | Token for authenticated GitHub fetches by Nix |
 | `cachix_name` | `unstoppablemango` | Cachix cache to pull from, and push to when a token is set; `''` installs Nix without Cachix |
 | `cachix_auth_token` | | Cachix token; without it the cache is pull-only |
