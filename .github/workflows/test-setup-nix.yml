@@ -67,3 +67,17 @@ jobs:
         run: |
           set -euo pipefail
           nix config show substituters | grep -F unstoppablemango
+
+  magic-nix-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./setup-nix
+        with:
+          magic_nix_cache: 'true'
+
+      - name: Verify the magic-nix-cache daemon is serving
+        run: |
+          set -euo pipefail
+          curl -fsS "http://$MAGIC_NIX_CACHE_ADDRESS/nix-cache-info"
