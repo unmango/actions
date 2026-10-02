@@ -1,3 +1,6 @@
+FROM alpine:3.24 AS test
+RUN echo "test stage" > /stage.txt
+
 FROM alpine:3.24
 RUN --mount=type=secret,id=test cat /run/secrets/test > /dev/null
 RUN echo "hello from podman-build-push test fixture" > /hello.txt

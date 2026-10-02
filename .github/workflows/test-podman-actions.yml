@@ -68,6 +68,22 @@ jobs:
           set -euo pipefail
           ! podman history --no-trunc "${{ env.TEST_IMAGE }}:single-${{ github.run_id }}" | grep -F "$(cat /etc/hostname)"
 
+  target:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./podman-build-push
+        with:
+          context: testdata/podman-build-push
+          target: test
+          tags: localhost/podman-actions-test:target-${{ github.run_id }}
+
+      - name: Verify the test stage was built
+        run: |
+          set -euo pipefail
+          [ "$(podman run --rm "localhost/podman-actions-test:target-${{ github.run_id }}" cat /stage.txt)" = "test stage" ]
+
   multi-arch:
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest

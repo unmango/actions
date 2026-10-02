@@ -183,6 +183,7 @@ The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`,
 | `file` | ✅ | ✅ | |
 | `platforms` | ✅ | ✅ | Multiple platforms build a manifest list; run `setup-qemu` first |
 | `tags` | ✅ | ✅ | |
+| `target` | ✅ | ✅ | |
 | `labels` | ✅ | ✅ | |
 | `annotations` | ✅ | ✅ | |
 | `build-args` | ✅ | ✅ | |
@@ -210,7 +211,6 @@ The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`,
 | `outputs` | ❌ | ✅ | |
 | `secret-envs` | ❌ | ✅ | |
 | `secret-files` | ❌ | ✅ | Use `secrets` |
-| `target` | ❌ | ✅ | |
 | `github-token` | ❌ | ✅ | |
 
 | Output | Podman | Docker | Notes |
