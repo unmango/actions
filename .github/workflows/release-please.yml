@@ -63,6 +63,15 @@ on:
       sha:
         description: Commit the release was tagged at
         value: ${{ jobs.release-please.outputs.sha }}
+      paths_released:
+        description: JSON array of package paths released on this run (manifest mode)
+        value: ${{ jobs.release-please.outputs.paths_released }}
+      prs_created:
+        description: "'true' when a release PR was opened or updated on this run"
+        value: ${{ jobs.release-please.outputs.prs_created }}
+      pr:
+        description: JSON object of the first release PR (e.g. fromJSON(pr).headBranchName)
+        value: ${{ jobs.release-please.outputs.pr }}
 
 jobs:
   release-please:
@@ -77,6 +86,9 @@ jobs:
       minor: ${{ steps.release.outputs.minor }}
       patch: ${{ steps.release.outputs.patch }}
       sha: ${{ steps.release.outputs.sha }}
+      paths_released: ${{ steps.release.outputs.paths_released }}
+      prs_created: ${{ steps.release.outputs.prs_created }}
+      pr: ${{ steps.release.outputs.pr }}
     steps:
       # A GitHub App token rather than GITHUB_TOKEN, so the release PR and tag
       # trigger workflows, and rather than a PAT, so it acts as no person and
