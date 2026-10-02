@@ -11,6 +11,9 @@ inputs:
   cachix_auth_token:
     description: Cachix authentication token (for pushing to cache)
     required: false
+  extra_pull_names:
+    description: Comma-separated list of additional Cachix caches to pull from
+    default: ''
   extra_nix_config:
     description: Additional Nix configuration lines
     required: false
@@ -31,4 +34,5 @@ runs:
       with:
         name: ${{ inputs.cachix_name }}
         authToken: ${{ inputs.cachix_auth_token }}
+        extraPullNames: ${{ inputs.extra_pull_names }}
         useDaemon: ${{ inputs.use_daemon }}

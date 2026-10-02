@@ -77,6 +77,7 @@ steps:
 | `github_access_token` | `github.token` | Token for authenticated GitHub fetches by Nix |
 | `cachix_name` | `unstoppablemango` | Cachix cache to pull from, and push to when a token is set; `''` installs Nix without Cachix |
 | `cachix_auth_token` | | Cachix token; without it the cache is pull-only |
+| `extra_pull_names` | | Comma-separated read-only Cachix caches, e.g. `mangopkgs,unmango` |
 | `extra_nix_config` | | Extra lines for `nix.conf` |
 | `use_daemon` | `true` | Push through the Cachix daemon; `false` scans the store at job end |
 
