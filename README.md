@@ -82,6 +82,7 @@ steps:
 | `extra_nix_config` | | Extra lines for `nix.conf` |
 | `use_daemon` | `true` | Push through the Cachix daemon; `false` scans the store at job end |
 | `skip_push` | `false` | Pull-only, even with `cachix_auth_token` set |
+| `magic_nix_cache` | `false` | Run `DeterminateSystems/magic-nix-cache-action` between the install and Cachix |
 
 ### Reusable workflow
 

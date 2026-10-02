@@ -23,6 +23,9 @@ inputs:
   use_daemon:
     description: Push through the Cachix daemon's post-build hook; when false, scan and push all store paths at the end of the job. Use false only with an isolated single-user store
     default: "true"
+  magic_nix_cache:
+    description: Run DeterminateSystems/magic-nix-cache-action after installing Nix
+    default: "false"
   skip_push:
     description: Pull from Cachix without pushing, even when cachix_auth_token is set
     default: "false"
@@ -39,6 +42,9 @@ runs:
     - if: inputs.install_nix != 'true'
       shell: bash
       run: echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
+
+    - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+      if: inputs.magic_nix_cache == 'true'
 
     - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
       if: inputs.cachix_name != ''
