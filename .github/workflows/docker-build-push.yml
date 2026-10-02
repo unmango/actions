@@ -3,6 +3,10 @@ name: Docker Build and Push
 on:
   workflow_call:
     inputs:
+      runs-on:
+        description: Runner label for the job
+        type: string
+        default: ubuntu-latest
       image:
         description: >-
           Newline-delimited list of image names to tag
@@ -38,7 +42,7 @@ on:
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     permissions:
       contents: read
       packages: write

@@ -32,6 +32,8 @@ The podman actions mirror the `docker/*` action interfaces so a workflow can swa
 | [`podman-build-push.yml`](.github/workflows/podman-build-push.yml) | Same interface as above, built with podman |
 | [`release-please.yml`](.github/workflows/release-please.yml) | Open release PRs and tag releases with release-please |
 
+Each reusable workflow takes a `runs-on` input (default `ubuntu-latest`) for callers on self-hosted runners.
+
 ## Usage
 
 Releases are tagged `vX.Y.Z` and a floating `vX` tag tracks the latest release of each major version.
@@ -243,6 +245,7 @@ Podman boolean inputs are strings (`'true'` and `'false'`) because composite act
 | Input | Podman | Docker | Notes |
 | --- | --- | --- | --- |
 | `image` | ✅ | ✅ | |
+| `runs-on` | ✅ | ✅ | Runner label, default `ubuntu-latest` |
 | `platforms` | ✅ | ✅ | Podman runs `setup-qemu` when more than one platform is listed |
 | `push` | ✅ | ✅ | |
 | `build-args` | ✅ | ✅ | |
