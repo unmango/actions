@@ -6,7 +6,7 @@ inputs:
     description: GitHub token for authenticating Nix fetches
     default: ${{ github.token }}
   cachix_name:
-    description: Cachix cache name
+    description: Cachix cache name; empty skips Cachix setup
     default: unstoppablemango
   cachix_auth_token:
     description: Cachix authentication token (for pushing to cache)
@@ -27,6 +27,7 @@ runs:
         extra_nix_config: ${{ inputs.extra_nix_config }}
 
     - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+      if: inputs.cachix_name != ''
       with:
         name: ${{ inputs.cachix_name }}
         authToken: ${{ inputs.cachix_auth_token }}

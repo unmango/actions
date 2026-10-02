@@ -19,3 +19,18 @@ jobs:
       - uses: ./setup-nix
 
       - run: nix --version
+
+  no-cachix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./setup-nix
+        with:
+          cachix_name: ''
+
+      - name: Verify Cachix substituter is absent
+        run: |
+          set -euo pipefail
+          nix config show substituters
+          ! nix config show substituters | grep -F unstoppablemango
