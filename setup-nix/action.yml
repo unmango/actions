@@ -20,6 +20,9 @@ inputs:
   use_daemon:
     description: Push through the Cachix daemon's post-build hook; when false, scan and push all store paths at the end of the job. Use false only with an isolated single-user store
     default: "true"
+  skip_push:
+    description: Pull from Cachix without pushing, even when cachix_auth_token is set
+    default: "false"
 
 runs:
   using: composite
@@ -36,3 +39,4 @@ runs:
         authToken: ${{ inputs.cachix_auth_token }}
         extraPullNames: ${{ inputs.extra_pull_names }}
         useDaemon: ${{ inputs.use_daemon }}
+        skipPush: ${{ inputs.skip_push }}
