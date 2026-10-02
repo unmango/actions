@@ -1,0 +1,34 @@
+name: Setup Podman
+description: Install or upgrade podman, crun, and skopeo from the Ubuntu archive
+
+inputs:
+  start-service:
+    description: Start the rootless podman socket (systemctl --user start podman.socket)
+    default: 'false'
+
+outputs:
+  podman-version:
+    description: Installed podman version
+    value: ${{ steps.install.outputs.podman-version }}
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ "$RUNNER_OS" != "Linux" ] || ! command -v apt-get >/dev/null; then
+          echo "::error::setup-podman supports Debian or Ubuntu runners only" >&2
+          exit 1
+        fi
+        sudo apt-get update -q
+        sudo apt-get install -y -q podman crun skopeo
+        echo "podman-version=$(podman version --format '{{.Client.Version}}')" >> "$GITHUB_OUTPUT"
+
+    - if: inputs.start-service == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        systemctl --user start podman.socket
+        systemctl --user is-active podman.socket
