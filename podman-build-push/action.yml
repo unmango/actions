@@ -62,6 +62,16 @@ inputs:
   push:
     description: Push the built image(s) after building
     default: 'false'
+  docker-load:
+    description: >-
+      Load the built image and its tags into the docker daemon (podman save | docker load),
+      the equivalent of docker/build-push-action's load. Single-platform builds only.
+    default: 'false'
+  archive:
+    description: >-
+      Path to write the built image to as a docker-archive tarball with all tags
+      (usable with kind load image-archive). Single-platform builds only.
+    default: ''
   sbom:
     description: >-
       Generate an SPDX SBOM with syft and attach it to the pushed image with cosign.
@@ -179,6 +189,29 @@ runs:
 
         echo "multi=$multi" >> "$GITHUB_OUTPUT"
         echo "imageid=$(cat "$iidfile")" >> "$GITHUB_OUTPUT"
+
+    - id: export
+      if: ${{ inputs.docker-load == 'true' || inputs.archive != '' }}
+      shell: bash
+      env:
+        TAGS: ${{ inputs.tags }}
+        MULTI: ${{ steps.build.outputs.multi }}
+        DOCKER_LOAD: ${{ inputs.docker-load }}
+        ARCHIVE: ${{ inputs.archive }}
+      run: |
+        set -euo pipefail
+        if [ "$MULTI" = "true" ]; then
+          echo "::error::docker-load and archive support single-platform builds only" >&2
+          exit 1
+        fi
+        mapfile -t tags < <(grep -v '^[[:space:]]*$' <<< "$TAGS")
+        if [ -n "$ARCHIVE" ]; then
+          mkdir -p "$(dirname "$ARCHIVE")"
+          podman save -q -o "$ARCHIVE" "${tags[@]}"
+        fi
+        if [ "$DOCKER_LOAD" = "true" ]; then
+          podman save -q "${tags[@]}" | docker load
+        fi
 
     - id: push
       if: ${{ inputs.push == 'true' }}

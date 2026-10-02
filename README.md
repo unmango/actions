@@ -199,6 +199,8 @@ The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`,
 | `shm-size` | ✅ | ✅ | |
 | `ulimit` | ✅ | ✅ | |
 | `push` | ✅ | ✅ | |
+| `load` | ✅ | ✅ | Named `docker-load`, since `podman load` imports in the opposite direction; single-platform only |
+| `archive` | ✅ | ❌ | Writes a docker-archive tarball of all tags, for `kind load image-archive`; single-platform only |
 | `sbom` | ✅ | ✅ | Podman requires `push` and needs `syft` and `cosign` on the runner |
 | `provenance` | ⚠️ | ✅ | No native SLSA provenance generation in buildah or podman |
 | `ssh` | ⚠️ | ✅ | No buildkit SSH agent forwarding equivalent |
@@ -207,8 +209,7 @@ The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`,
 | `attests` | ❌ | ✅ | |
 | `builder` | ❌ | ✅ | |
 | `call` | ❌ | ✅ | |
-| `load` | ❌ | ✅ | Podman images are already in the local store after a build |
-| `outputs` | ❌ | ✅ | |
+| `outputs` | ❌ | ✅ | `archive` covers `type=docker,dest=<path>` |
 | `secret-envs` | ❌ | ✅ | |
 | `secret-files` | ❌ | ✅ | Use `secrets` |
 | `github-token` | ❌ | ✅ | |

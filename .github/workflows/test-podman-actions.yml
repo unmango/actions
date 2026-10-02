@@ -84,6 +84,32 @@ jobs:
           set -euo pipefail
           [ "$(podman run --rm "localhost/podman-actions-test:target-${{ github.run_id }}" cat /stage.txt)" = "test stage" ]
 
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./podman-build-push
+        with:
+          context: testdata/podman-build-push
+          secrets: id=test,src=/etc/hostname
+          tags: |
+            localhost/podman-actions-test:export-a-${{ github.run_id }}
+            localhost/podman-actions-test:export-b-${{ github.run_id }}
+          docker-load: 'true'
+          archive: ${{ runner.temp }}/export/image.tar
+
+      - name: Verify both tags reached the docker daemon
+        run: |
+          docker image inspect \
+            "localhost/podman-actions-test:export-a-${{ github.run_id }}" \
+            "localhost/podman-actions-test:export-b-${{ github.run_id }}" >/dev/null
+
+      - name: Verify the archive lists both tags
+        run: |
+          set -euo pipefail
+          tar -xOf "${{ runner.temp }}/export/image.tar" manifest.json | jq -e '.[0].RepoTags | length == 2'
+
   multi-arch:
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
