@@ -80,6 +80,7 @@ steps:
 | `extra_pull_names` | | Comma-separated read-only Cachix caches, e.g. `mangopkgs,unmango` |
 | `extra_nix_config` | | Extra lines for `nix.conf` |
 | `use_daemon` | `true` | Push through the Cachix daemon; `false` scans the store at job end |
+| `skip_push` | `false` | Pull-only, even with `cachix_auth_token` set |
 
 ### Reusable workflow
 
