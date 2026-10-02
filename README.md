@@ -20,6 +20,7 @@ The podman actions mirror the `docker/*` action interfaces so a workflow can swa
 | [`podman-login`](podman-login/action.yml) | Log into a container registry with podman, with ECR auto-detection | [`docker/login-action`](https://github.com/docker/login-action) |
 | [`setup-qemu`](setup-qemu/action.yml) | Register QEMU binfmt emulators via `tonistiigi/binfmt` for cross-platform builds | [`docker/setup-qemu-action`](https://github.com/docker/setup-qemu-action) |
 | [`setup-nix`](setup-nix/action.yml) | Install Nix and configure Cachix | none |
+| [`setup-podman`](setup-podman/action.yml) | Install or upgrade podman, crun, and skopeo from the Ubuntu archive | none |
 
 ## Reusable workflows
 

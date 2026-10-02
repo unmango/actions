@@ -6,6 +6,7 @@ on:
       - podman-login/**
       - podman-build-push/**
       - setup-qemu/**
+      - setup-podman/**
       - testdata/podman-build-push/**
       - .github/workflows/podman-build-push.yml
       - .github/workflows/test-podman-actions.yml
@@ -19,6 +20,23 @@ env:
   TEST_IMAGE: ghcr.io/${{ github.repository }}/podman-actions-test
 
 jobs:
+  setup-podman:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - id: podman
+        uses: ./setup-podman
+        with:
+          start-service: 'true'
+
+      - name: Verify the reported version matches podman
+        run: |
+          set -euo pipefail
+          [ -n "${{ steps.podman.outputs.podman-version }}" ]
+          [ "$(podman version --format '{{.Client.Version}}')" = "${{ steps.podman.outputs.podman-version }}" ]
+          skopeo --version
+
   single-arch:
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
