@@ -127,6 +127,32 @@ jobs:
       - name: Verify the image built from the git context
         run: podman image exists "localhost/podman-actions-test:git-${{ github.run_id }}"
 
+  registry-cache:
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./podman-login
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          ecr: 'false'
+
+      - uses: ./podman-build-push
+        with:
+          context: testdata/podman-build-push
+          secrets: id=test,src=/etc/hostname
+          tags: localhost/podman-actions-test:cache-${{ github.run_id }}
+          cache-from: ${{ env.TEST_IMAGE }}-cache
+          cache-to: ${{ env.TEST_IMAGE }}-cache
+
+      - name: Verify cache layers were pushed
+        run: |
+          set -euo pipefail
+          skopeo list-tags "docker://${{ env.TEST_IMAGE }}-cache" | jq -e '.Tags | length > 0'
+
   multi-arch:
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
