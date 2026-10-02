@@ -18,6 +18,7 @@ The podman actions mirror the `docker/*` action interfaces so a workflow can swa
 | --- | --- | --- |
 | [`podman-build-push`](podman-build-push/action.yml) | Build and optionally push an image with podman, with multi-arch, cache, and SBOM support | [`docker/build-push-action`](https://github.com/docker/build-push-action) |
 | [`podman-push`](podman-push/action.yml) | Tag and push an image or manifest list already in podman's store, such as one loaded from a Nix build | [`docker/build-push-action`](https://github.com/docker/build-push-action) with `push` only |
+| [`podman-manifest`](podman-manifest/action.yml) | Create a manifest list from existing registry images and push it to several tags | [`docker buildx imagetools create`](https://docs.docker.com/reference/cli/docker/buildx/imagetools/create/) |
 | [`podman-login`](podman-login/action.yml) | Log into a container registry with podman, with ECR auto-detection | [`docker/login-action`](https://github.com/docker/login-action) |
 | [`setup-qemu`](setup-qemu/action.yml) | Register QEMU binfmt emulators via `tonistiigi/binfmt` for cross-platform builds | [`docker/setup-qemu-action`](https://github.com/docker/setup-qemu-action) |
 | [`setup-nix`](setup-nix/action.yml) | Install Nix and configure Cachix | none |

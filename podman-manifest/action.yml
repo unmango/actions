@@ -1,0 +1,48 @@
+name: Podman Manifest
+description: Create a manifest list from existing registry images and push it to one or more tags
+
+inputs:
+  sources:
+    description: >-
+      Newline-delimited list of source image references in a registry.
+      A source that is itself a manifest list contributes all of its images.
+    required: true
+  tags:
+    description: Newline-delimited list of fully qualified tags to push the manifest list to
+    required: true
+
+outputs:
+  digest:
+    description: Digest of the pushed manifest list
+    value: ${{ steps.manifest.outputs.digest }}
+
+runs:
+  using: composite
+  steps:
+    - id: manifest
+      shell: bash
+      env:
+        SOURCES: ${{ inputs.sources }}
+        TAGS: ${{ inputs.tags }}
+      run: |
+        set -euo pipefail
+        mapfile -t sources < <(grep -v '^[[:space:]]*$' <<< "$SOURCES" || true)
+        mapfile -t tags < <(grep -v '^[[:space:]]*$' <<< "$TAGS" || true)
+        if [ "${#sources[@]}" -eq 0 ] || [ "${#tags[@]}" -eq 0 ]; then
+          echo "::error::sources and tags must each contain at least one non-empty reference" >&2
+          exit 1
+        fi
+
+        manifest="localhost/podman-manifest-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$GITHUB_ACTION"
+        podman manifest rm "$manifest" >/dev/null 2>&1 || true
+        podman manifest create "$manifest"
+        for s in "${sources[@]}"; do
+          podman manifest add --all "$manifest" "docker://$s"
+        done
+
+        digestfile="$RUNNER_TEMP/podman-manifest-digest"
+        for t in "${tags[@]}"; do
+          podman manifest push --all "$manifest" "docker://$t" --digestfile "$digestfile"
+        done
+        podman manifest rm "$manifest" >/dev/null
+        echo "digest=$(cat "$digestfile")" >> "$GITHUB_OUTPUT"
