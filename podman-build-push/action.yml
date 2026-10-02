@@ -14,6 +14,9 @@ inputs:
   tags:
     description: Newline-delimited list of tags to build/push
     required: true
+  target:
+    description: Name of the build stage to build
+    default: ''
   labels:
     description: Newline-delimited list of labels (KEY=value)
     default: ''
@@ -111,6 +114,7 @@ runs:
       env:
         CONTEXT: ${{ inputs.context }}
         FILE: ${{ inputs.file }}
+        TARGET: ${{ inputs.target }}
         PLATFORMS: ${{ inputs.platforms }}
         TAGS: ${{ inputs.tags }}
         LABELS: ${{ inputs.labels }}
@@ -135,6 +139,7 @@ runs:
 
         args=(--platform "$PLATFORMS")
         [ -n "$FILE" ] && args+=(-f "$FILE")
+        [ -n "$TARGET" ] && args+=(--target "$TARGET")
         [ "$NO_CACHE" = "true" ] && args+=(--no-cache)
         [ "$PULL" = "true" ] && args+=(--pull)
         [ -n "$NETWORK" ] && args+=(--network "$NETWORK")
