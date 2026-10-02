@@ -4,7 +4,7 @@ description: Install Nix and configure Cachix
 inputs:
   github_access_token:
     description: GitHub token for authenticating Nix fetches
-    required: true
+    default: ${{ github.token }}
   cachix_name:
     description: Cachix cache name
     default: unstoppablemango
