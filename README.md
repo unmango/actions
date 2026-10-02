@@ -167,6 +167,7 @@ jobs:
 
 Pass `config-file` and `manifest-file` to use a `release-please-config.json` instead of the `simple` defaults.
 The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`, `patch`, and `sha` as outputs for jobs that need to run only after a release.
+`prs_created` and `pr` (JSON, e.g. `fromJSON(needs.release.outputs.pr).headBranchName`) serve jobs that push to the release PR branch, and `paths_released` lists released package paths in manifest mode.
 
 ## Feature support matrix
 
