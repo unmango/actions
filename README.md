@@ -117,8 +117,9 @@ The workflow needs credentials with `contents`, `pull-requests`, and `issues` wr
 Tags created with the default `GITHUB_TOKEN` do not trigger other workflows, so the image build would never run.
 
 Pass a GitHub App through the `app-client-id` input and the `app-private-key` secret, and the workflow mints a token from them.
-Commits pushed with an app token are signed.
 A personal access token in the `token` secret is the alternative when `app-client-id` is empty.
+An app token does not act as a person and does not expire, which is the reason to prefer it over a PAT.
+release-please writes through the GitHub API, so its commits are signed with either token.
 
 ```yaml
 # .github/workflows/release-please.yml

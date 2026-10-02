@@ -79,8 +79,9 @@ jobs:
       patch: ${{ steps.release.outputs.patch }}
       sha: ${{ steps.release.outputs.sha }}
     steps:
-      # A GitHub App token rather than GITHUB_TOKEN, so the release PR triggers
-      # CI, and rather than a PAT, so the commits it pushes are signed.
+      # A GitHub App token rather than GITHUB_TOKEN, so the release PR and tag
+      # trigger workflows, and rather than a PAT, so it acts as no person and
+      # does not expire.
       # The condition reads the input because secrets are unavailable in `if`.
       - id: app-token
         if: inputs.app-client-id != ''
