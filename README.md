@@ -61,6 +61,25 @@ steps:
       tags: ghcr.io/${{ github.repository }}:latest
 ```
 
+### `setup-nix`
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+
+  - uses: unmango/actions/setup-nix@main
+    with:
+      cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+```
+
+| Input | Default | Purpose |
+| --- | --- | --- |
+| `github_access_token` | `github.token` | Token for authenticated GitHub fetches by Nix |
+| `cachix_name` | `unstoppablemango` | Cachix cache to pull from, and push to when a token is set |
+| `cachix_auth_token` | | Cachix token; without it the cache is pull-only |
+| `extra_nix_config` | | Extra lines for `nix.conf` |
+| `use_daemon` | `true` | Push through the Cachix daemon; `false` scans the store at job end |
+
 ### Reusable workflow
 
 ```yaml
