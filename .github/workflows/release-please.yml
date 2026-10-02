@@ -67,9 +67,8 @@ on:
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
+    # No permissions block: the job inherits the caller's GITHUB_TOKEN grant,
+    # so app-token and PAT callers can grant nothing.
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}

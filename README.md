@@ -113,6 +113,7 @@ It opens a release PR from Conventional Commits, maintains `version.txt` and `CH
 The tag push runs the build-push workflow, and `docker/metadata-action` derives the image tags `1.2.3`, `1.2`, `1`, and `latest` from it.
 
 The workflow needs credentials with `contents`, `pull-requests`, and `issues` write.
+With an app token or PAT, the caller can set `permissions: {}`; only the `GITHUB_TOKEN` fallback needs the caller to grant `contents` and `pull-requests` write.
 `issues` write covers the `autorelease` labels release-please puts on its PRs.
 Tags created with the default `GITHUB_TOKEN` do not trigger other workflows, so the image build would never run.
 
@@ -127,9 +128,7 @@ on:
   push:
     branches: [main]
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   release:
