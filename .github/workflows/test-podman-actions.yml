@@ -6,6 +6,7 @@ on:
       - podman-login/**
       - podman-build-push/**
       - podman-push/**
+      - podman-manifest/**
       - setup-qemu/**
       - setup-podman/**
       - testdata/podman-build-push/**
@@ -127,6 +128,32 @@ jobs:
             digest="$(skopeo inspect --format '{{.Digest}}' "docker://${{ env.TEST_IMAGE }}:$t-${{ github.run_id }}")"
             [ "$digest" = "${{ steps.push.outputs.digest }}" ]
           done
+
+  manifest:
+    needs: multi-arch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./podman-login
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          ecr: 'false'
+
+      - id: manifest
+        uses: ./podman-manifest
+        with:
+          sources: ${{ env.TEST_IMAGE }}:multi-${{ github.run_id }}
+          tags: ${{ env.TEST_IMAGE }}:manifest-${{ github.run_id }}
+
+      - name: Verify the retagged list keeps both platforms
+        run: |
+          set -euo pipefail
+          ref="docker://${{ env.TEST_IMAGE }}:manifest-${{ github.run_id }}"
+          [ "$(skopeo inspect --raw "$ref" | jq '.manifests | length')" = "2" ]
+          [ "$(skopeo inspect --format '{{.Digest}}' "$ref")" = "${{ steps.manifest.outputs.digest }}" ]
 
   sbom:
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
