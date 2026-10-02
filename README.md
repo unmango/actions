@@ -40,6 +40,7 @@ Releases are tagged `vX.Y.Z` and a floating `vX` tag tracks the latest release o
 The examples use `@main` for brevity; pin to `@v1` for the floating major tag, or to `@v1.2.3` or a full commit SHA for an exact version.
 `setup-qemu` registers `binfmt_misc` handlers with `sudo podman run --privileged`, so it needs `sudo` and a rootful podman.
 GitHub-hosted Ubuntu runners meet both requirements.
+`podman-build-push` builds from the git repository at the current commit when `context` is empty, so it needs no checkout; pass `context: .` to build the checked-out workspace instead.
 
 ### Composite actions
 
@@ -61,6 +62,7 @@ steps:
 
   - uses: unmango/actions/podman-build-push@main
     with:
+      context: .
       platforms: linux/amd64,linux/arm64
       push: 'true'
       tags: ghcr.io/${{ github.repository }}:latest
@@ -179,7 +181,7 @@ The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`,
 
 | Input | Podman | Docker | Notes |
 | --- | --- | --- | --- |
-| `context` | ✅ | ✅ | |
+| `context` | ✅ | ✅ | Empty builds from `<repo>.git#<sha>` like buildx; pass `.` to build the checkout. `#ref:subdir` URLs are not supported by podman 5.8 |
 | `file` | ✅ | ✅ | |
 | `platforms` | ✅ | ✅ | Multiple platforms build a manifest list; run `setup-qemu` first |
 | `tags` | ✅ | ✅ | |
@@ -212,7 +214,7 @@ The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`,
 | `outputs` | ❌ | ✅ | `archive` covers `type=docker,dest=<path>` |
 | `secret-envs` | ❌ | ✅ | |
 | `secret-files` | ❌ | ✅ | Use `secrets` |
-| `github-token` | ❌ | ✅ | |
+| `github-token` | ✅ | ✅ | Authenticates the git context clone |
 
 | Output | Podman | Docker | Notes |
 | --- | --- | --- | --- |
