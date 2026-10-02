@@ -3,6 +3,10 @@ name: Release Please
 on:
   workflow_call:
     inputs:
+      runs-on:
+        description: Runner label for the job
+        type: string
+        default: ubuntu-latest
       release-type:
         description: >-
           Release type when no config file is used.
@@ -75,7 +79,7 @@ on:
 
 jobs:
   release-please:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     # No permissions block: the job inherits the caller's GITHUB_TOKEN grant,
     # so app-token and PAT callers can grant nothing.
     outputs:
