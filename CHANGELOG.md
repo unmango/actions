@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.3.0](https://github.com/unmango/actions/compare/v1.2.0...v1.3.0) (2026-10-02)
+
+
+### Features
+
+* add podman-manifest action ([#94](https://github.com/unmango/actions/issues/94)) ([fff2717](https://github.com/unmango/actions/commit/fff2717148f5e682a1f497b53e70e49b5fc3ec17)), closes [#63](https://github.com/unmango/actions/issues/63)
+* add podman-push action for images built elsewhere ([#93](https://github.com/unmango/actions/issues/93)) ([08095a6](https://github.com/unmango/actions/commit/08095a633e923296f99be531f1c29aecbea46abc)), closes [#62](https://github.com/unmango/actions/issues/62)
+* add setup-podman action ([#92](https://github.com/unmango/actions/issues/92)) ([9a2bd86](https://github.com/unmango/actions/commit/9a2bd86378e807a80fc14f2087ebea01719281fc)), closes [#61](https://github.com/unmango/actions/issues/61)
+* let callers choose runs-on for the reusable workflows ([#90](https://github.com/unmango/actions/issues/90)) ([bba6cd3](https://github.com/unmango/actions/commit/bba6cd322ef2762a7f4e8d5c91406ad12ff01944)), closes [#43](https://github.com/unmango/actions/issues/43)
+* **release-please:** expose prs_created, pr, and paths_released outputs ([#89](https://github.com/unmango/actions/issues/89)) ([fbdcdef](https://github.com/unmango/actions/commit/fbdcdef59e43ecd9a2db2894025f6c00782b82f3)), closes [#55](https://github.com/unmango/actions/issues/55)
+
+
+### Bug Fixes
+
+* **release-please:** stop requesting GITHUB_TOKEN write for the job ([#88](https://github.com/unmango/actions/issues/88)) ([7dd2f4e](https://github.com/unmango/actions/commit/7dd2f4eabf436f14a2a76598082f949dd9c14804)), closes [#56](https://github.com/unmango/actions/issues/56)
+
+
+### Documentation
+
+* **release-please:** correct why an app token is preferred over a PAT ([#87](https://github.com/unmango/actions/issues/87)) ([061191c](https://github.com/unmango/actions/commit/061191c0c0db882dc8fd1403b18ecadd0a79b907)), closes [#44](https://github.com/unmango/actions/issues/44)
+
 ## [1.2.0](https://github.com/unmango/actions/compare/v1.1.1...v1.2.0) (2026-10-02)
 
 
