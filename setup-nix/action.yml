@@ -2,6 +2,9 @@ name: Setup Nix
 description: Install Nix and configure Cachix
 
 inputs:
+  install_nix:
+    description: Install Nix; set false on runners with Nix preinstalled
+    default: "true"
   github_access_token:
     description: GitHub token for authenticating Nix fetches
     default: ${{ github.token }}
@@ -28,9 +31,14 @@ runs:
   using: composite
   steps:
     - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      if: inputs.install_nix == 'true'
       with:
         github_access_token: ${{ inputs.github_access_token }}
         extra_nix_config: ${{ inputs.extra_nix_config }}
+
+    - if: inputs.install_nix != 'true'
+      shell: bash
+      run: echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
 
     - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
       if: inputs.cachix_name != ''
