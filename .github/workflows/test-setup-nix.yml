@@ -34,3 +34,20 @@ jobs:
           set -euo pipefail
           nix config show substituters
           ! nix config show substituters | grep -F unstoppablemango
+
+  extra-pull-names:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./setup-nix
+        with:
+          extra_pull_names: mangopkgs
+
+      - name: Verify both caches are substituters
+        run: |
+          set -euo pipefail
+          substituters="$(nix config show substituters)"
+          echo "$substituters"
+          grep -F unstoppablemango <<< "$substituters"
+          grep -F mangopkgs <<< "$substituters"
