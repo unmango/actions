@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.0.0](https://github.com/unmango/actions/compare/v1.3.0...v2.0.0) (2026-10-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* **podman-build-push:** podman-build-push's context defaults to the git repository at the current commit instead of '.'. Pass context: '.' to build the checked-out workspace, including generated or modified files.
+
+### Features
+
+* **podman-build-push:** add target input ([#82](https://github.com/unmango/actions/issues/82)) ([394354f](https://github.com/unmango/actions/commit/394354fb6c5fc5b0cff78c9de1dddfbed72dca6b)), closes [#58](https://github.com/unmango/actions/issues/58)
+* **podman-build-push:** build from the git context by default ([#84](https://github.com/unmango/actions/issues/84)) ([1432d87](https://github.com/unmango/actions/commit/1432d87c7c85c89175224fb06b3b82006d31ade0)), closes [#60](https://github.com/unmango/actions/issues/60)
+* **podman-build-push:** export the built image for local consumers ([#83](https://github.com/unmango/actions/issues/83)) ([c9d0516](https://github.com/unmango/actions/commit/c9d0516c4ae6d415dff9707b0ff2f90a5eb2e516)), closes [#59](https://github.com/unmango/actions/issues/59)
+
+
+### Documentation
+
+* **podman-build-push:** registry cache recipe for GitHub-hosted runners ([#85](https://github.com/unmango/actions/issues/85)) ([7b68a78](https://github.com/unmango/actions/commit/7b68a7856c051d6a76c1e38920e1476a4d9bd3b1)), closes [#57](https://github.com/unmango/actions/issues/57)
+
 ## [1.3.0](https://github.com/unmango/actions/compare/v1.2.0...v1.3.0) (2026-10-02)
 
 
