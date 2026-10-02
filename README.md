@@ -91,6 +91,34 @@ steps:
 | `skip_push` | `false` | Pull-only, even with `cachix_auth_token` set |
 | `magic_nix_cache` | `false` | Run `DeterminateSystems/magic-nix-cache-action` between the install and Cachix |
 
+### Build cache on GitHub-hosted runners
+
+`docker/build-push-action`'s `type=gha` cache has no podman equivalent.
+A registry cache works instead: podman pushes each built layer to a cache repository and pulls matching layers on the next build.
+
+```yaml
+permissions:
+  contents: read
+  packages: write
+
+steps:
+  - uses: unmango/actions/podman-login@main
+    with:
+      registry: ghcr.io
+      username: ${{ github.actor }}
+      password: ${{ github.token }}
+
+  - uses: unmango/actions/podman-build-push@main
+    with:
+      tags: ghcr.io/${{ github.repository }}:latest
+      cache-from: ghcr.io/${{ github.repository }}/cache
+      # Pull requests read the cache but do not write to it.
+      cache-to: ${{ github.event_name != 'pull_request' && format('ghcr.io/{0}/cache', github.repository) || '' }}
+```
+
+Either input makes podman build with `--layers`.
+The cache repository is a separate GHCR package; give it the same visibility as the image.
+
 ### Reusable workflow
 
 ```yaml
@@ -192,7 +220,7 @@ The workflow exposes `release_created`, `tag_name`, `version`, `major`, `minor`,
 | `build-contexts` | ✅ | ✅ | |
 | `secrets` | ✅ | ✅ | Podman takes the `id=id,src=path` form only |
 | `no-cache` | ✅ | ✅ | |
-| `cache-from` | ✅ | ✅ | Podman takes a single registry ref or local directory, not buildx `type=...` syntax, and forces `--layers` |
+| `cache-from` | ✅ | ✅ | Podman takes a single registry ref or local directory, not buildx `type=...` syntax, and forces `--layers`; see [Build cache on GitHub-hosted runners](#build-cache-on-github-hosted-runners) |
 | `cache-to` | ✅ | ✅ | Same as `cache-from` |
 | `pull` | ✅ | ✅ | |
 | `network` | ✅ | ✅ | |
